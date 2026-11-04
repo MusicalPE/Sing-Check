@@ -35,6 +35,10 @@ header .staff{position:absolute;inset:14px 0 auto 0;height:48px;background:repea
 header h1{position:relative;font-family:var(--f-display);font-weight:400;font-size:2.4rem;line-height:1.1;margin:0;letter-spacing:.01em;text-wrap:balance}
 header h1 .en{font-family:var(--f-num);font-size:.95rem;color:var(--accent);letter-spacing:.06em;margin-left:6px;vertical-align:middle}
 select{font:inherit;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px 10px;max-width:100%}
+.aibox{border:1px solid var(--line);border-radius:8px;padding:14px;background:var(--accent-soft);display:flex;flex-direction:column;gap:10px;min-width:0}
+.aititle{margin:0;font-family:var(--f-display);font-size:1.15rem}
+.aisteps{margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:2px}
+pre.prompt{white-space:pre-wrap;word-break:keep-all;overflow-wrap:anywhere;font-family:var(--f-body);font-size:.85rem;line-height:1.6;margin:0;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:10px 12px;max-height:240px;overflow:auto}
 footer{text-align:center;font-size:.8rem;color:var(--muted)}
 header p{position:relative;margin:14px 0 0;color:var(--muted);max-width:62ch}
 section.step{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px;display:flex;flex-direction:column;gap:14px;min-width:0}
@@ -53,7 +57,7 @@ button:focus-visible,.filebtn:focus-within,textarea:focus-visible,input:focus-vi
 textarea{width:100%;box-sizing:border-box;min-height:96px;font-family:var(--f-num);font-size:.92rem;line-height:1.7;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:10px 12px;resize:vertical}
 input[type=number],input[type=text]{width:72px;font:inherit;font-family:var(--f-num);background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:7px 8px}
 .help{font-size:.85rem;color:var(--muted);background:var(--bg);border-radius:8px;padding:10px 12px;margin:0}
-.help code{font-family:var(--f-num);color:var(--ink)}
+.help code{font-family:"IBM Plex Mono","IBM Plex Sans KR",system-ui,sans-serif;color:var(--ink)}
 .status{font-size:.9rem;margin:0;color:var(--muted)}
 .status.err{color:var(--bad)}
 .thumbs{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
@@ -113,6 +117,34 @@ input[type=range],input[type=checkbox]{accent-color:var(--accent)}
     <select id="songSel"><option value="">곡을 고르세요</option></select>
   </div>
   <p id="hostedNote" class="sub" hidden>곡 목록에 없는 노래는 아래 글상자에 음을 직접 적어서 불러도 돼요.</p>
+  <div id="aiBox" class="aibox" hidden>
+    <p class="aititle">악보 PDF를 음 목록으로 바꾸는 법</p>
+    <ol class="aisteps">
+      <li>Claude 같은 AI 채팅에 악보 PDF를 첨부하고, 아래 부탁 글을 복사해 붙여 넣어요.</li>
+      <li>답으로 온 음 목록을 아래 멜로디 글상자에 붙여 넣어요.</li>
+      <li>"멜로디 듣기"로 들어 보고, 틀린 음이 있으면 그 음만 고쳐요.</li>
+    </ol>
+    <div class="row"><button id="copyPrompt" class="primary">부탁 글 복사</button><span id="promptStatus" class="sub" aria-live="polite"></span></div>
+<pre id="aiPrompt" class="prompt">첨부한 악보에서 노래 부르는 멜로디만 음 목록으로 바꿔 주세요.
+
+[적는 방법]
+- 반주(피아노), 화음, 코드 기호는 빼고 가사가 붙은 멜로디 한 줄만 적어요. 성부가 여럿이면 맨 위 성부만 적어요.
+- 음 하나는 "음이름옥타브:박"으로 적어요. 가온 도가 C4예요. 샵은 #, 플랫은 b로 적어요. (예: F#4:1, Bb3:0.5)
+- 박은 4분음표를 1로 해요. 8분음표 0.5, 16분음표 0.25, 점8분음표 0.75, 점4분음표 1.5, 2분음표 2, 점2분음표 3, 온음표 4, 셋잇단 8분음표 0.333
+- 쉼표는 "쉼:박"으로 적어요. (예: 쉼:1)
+- 조표와 임시표를 반영하고, 붙임줄로 이어진 음은 하나로 합쳐요.
+- 도돌이표, 1·2번 괄호, D.C., D.S.가 있으면 실제로 부르는 순서대로 펼쳐서 적어요.
+- 마디 사이에는 | 를 넣고, 한 줄에 4마디씩 적어요.
+
+[예시]
+C4:1 C4:1 G4:1 G4:1 | A4:1 A4:1 G4:2 | F4:1 F4:1 E4:1 E4:1 | D4:1 D4:1 C4:2
+
+[답하는 방법]
+1. 곡 제목과 빠르기(4분음표 기준 BPM, 악보에 적혀 있으면)
+2. 음 목록만 코드 블록 하나에
+3. 읽기 어려웠던 곳이 있으면 마지막에 짧게</pre>
+    <p class="sub">악보 사진을 올려도 돼요. 반주 없는 멜로디 악보일수록 정확하게 읽어요.</p>
+  </div>
   <div id="pdfArea" class="mrinner">
   <div class="row">
     <label class="filebtn">악보 PDF 고르기<input id="pdfIn" type="file" accept="application/pdf,.pdf"></label>
@@ -123,7 +155,7 @@ input[type=range],input[type=checkbox]{accent-color:var(--accent)}
   <div id="thumbs" class="thumbs" hidden></div>
   </div>
   <div>
-    <p class="lbl" style="margin-bottom:6px">멜로디 (자동으로 읽은 뒤 틀린 음은 여기서 고치세요)</p>
+    <p id="melLabel" class="lbl" style="margin-bottom:6px">멜로디 (자동으로 읽은 뒤 틀린 음은 여기서 고치세요)</p>
     <textarea id="scoreText" spellcheck="false" aria-label="멜로디 음 목록"></textarea>
   </div>
   <p class="help">음 하나를 <code>음이름옥타브:박</code>으로 적어요. <code>C4:1</code>은 가온 도 4분음표, <code>G4:0.5</code>는 솔 8분음표, <code>F#4:1.5</code>는 점4분음표. 계이름도 돼요: <code>솔4 미4:0.5</code> (고정도, 박을 빼면 1박). 쉼표는 <code>쉼:1</code>.</p>
@@ -247,7 +279,7 @@ const TWINKLE="C4 C4 G4 G4 A4 A4 G4:2 F4 F4 E4 E4 D4 D4 C4:2\nG4 G4 F4 F4 E4 E4 
 /* ---------- 악보 글 읽기 ---------- */
 function parseDur(s){ if(s==null||s==='') return 1; if(s.includes('/')){const [a,b]=s.split('/').map(Number);return b?a/b:null} const v=Number(s); return isFinite(v)&&v>0?v:null }
 function parseScore(text){
-  const toks=text.replace(/[,|]/g,' ').split(/\s+/).filter(Boolean);
+  const toks=text.replace(/```\w*/g,' ').replace(/[,|]/g,' ').split(/\s+/).filter(Boolean);
   let oct=4,beat=0; const notes=[],bad=[];
   for(const tk of toks){
     let m=tk.match(/^(쉼|R|r)(?::([\d.\/]+))?$/);
@@ -650,9 +682,10 @@ $('#karaGo').addEventListener('click',async()=>{
 });
 
 /* ---------- 곡 목록 / 복사 ---------- */
-function copyFallback(t){ const ta=document.createElement('textarea'); ta.value=t; ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.select(); let ok=false; try{ok=document.execCommand('copy')}catch(e){} ta.remove();
-  $('#copyStatus').textContent=ok?'복사했어요.':'복사가 막혀 있어요. 글상자에서 직접 복사해 주세요.' }
-function copyText(t){ try{ navigator.clipboard.writeText(t).then(()=>{$('#copyStatus').textContent='복사했어요.'},()=>copyFallback(t)) }catch(e){ copyFallback(t) } }
+function copyFallback(t,el){ const ta=document.createElement('textarea'); ta.value=t; ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.select(); let ok=false; try{ok=document.execCommand('copy')}catch(e){} ta.remove();
+  el.textContent=ok?'복사했어요.':'복사가 막혀 있어요. 글을 직접 골라 복사해 주세요.' }
+function copyText(t,el){ el=el||$('#copyStatus'); try{ navigator.clipboard.writeText(t).then(()=>{el.textContent='복사했어요.'},()=>copyFallback(t,el)) }catch(e){ copyFallback(t,el) } }
+$('#copyPrompt').addEventListener('click',()=>copyText($('#aiPrompt').textContent,$('#promptStatus')));
 function songBlock(){
   return '  {\n    title: '+JSON.stringify($('#songTitle').value.trim()||'제목 없음')+',\n    bpm: '+(+$('#bpm').value||90)+',\n    transpose: '+getTr()+',\n    offset: '+mrOff()+',\n    mr: "",\n    notes: `\n'+$('#scoreText').value.trim().replace(/`/g,'')+'\n`\n  },\n';
 }
@@ -662,7 +695,7 @@ const IN_CLAUDE=!!(window.claude&&window.claude.use);
 function initSongs(){ const L=Array.isArray(window.SONGS)?window.SONGS:[]; if(!L.length) return; const sel=$('#songSel');
   L.forEach((sg,i)=>{ const o=document.createElement('option'); o.value=String(i); o.textContent=sg.title||('곡 '+(i+1)); sel.appendChild(o) });
   $('#songPick').hidden=false; $('#hostedNote').hidden=false }
-if(!IN_CLAUDE){ $('#pdfArea').hidden=true; const s=document.createElement('script'); s.src='songs.js'; s.onload=initSongs; document.head.appendChild(s) }
+if(!IN_CLAUDE){ $('#pdfArea').hidden=true; $('#aiBox').hidden=false; $('#melLabel').textContent='멜로디 (AI가 준 음 목록을 여기에 붙여 넣으세요. 틀린 음도 여기서 고쳐요)'; const s=document.createElement('script'); s.src='songs.js'; s.onload=initSongs; document.head.appendChild(s) }
 $('#songSel').addEventListener('change',async e=>{ const sg=(window.SONGS||[])[+e.target.value]; if(e.target.value===''||!sg) return;
   $('#scoreText').value=String(sg.notes||'').trim(); $('#songTitle').value=sg.title||'';
   $('#bpm').value=sg.bpm||90; $('#transpose').value=sg.transpose||0; $('#mrOffset').value=sg.offset||0;
